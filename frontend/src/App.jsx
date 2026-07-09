@@ -13,12 +13,12 @@ export default function App() {
   const [loading, setLoading] = useState(false);
 
   const [formState, setFormState] = useState({
-    hcpName: "Dr. Amanda Ross",
+    hcpName: "Extracted from log",
     specialty: "Cardiology",
-    facility: "Johns Hopkins Clinic",
-    topic: "Lipitor",
-    sentiment: "Highly Positive",
-    nextFollowUp: "Next Friday"
+    facility: "Parsed Location",
+    topic: "Drug discussed",
+    sentiment: "Neutral",
+    nextFollowUp: "TBD"
   });
 
   const [analytics, setAnalytics] = useState({
@@ -44,7 +44,14 @@ export default function App() {
 
       if (response.data && response.data.response) {
         setMessages((prev) => [...prev, { sender: "ai", text: response.data.response }]);
-        if (response.data.form_state) setFormState(response.data.form_state);
+
+        // Backend ippo already-fill aana fields-a None nu anuppadhu.
+        // Adhaala idhu spread pannumbodhu, extract aana fields mattum update aagum,
+        // extract aagatha fields adha maadhiriye (untouched) irukkum.
+        if (response.data.form_state) {
+          setFormState((prev) => ({ ...prev, ...response.data.form_state }));
+        }
+
         if (response.data.analytics) setAnalytics(response.data.analytics);
       }
     } catch (error) {
