@@ -1,16 +1,4 @@
-/ai-crm-hcp
-│
-├── /backend            # All FastAPI, LangGraph, and models code
-│   ├── /app
-│   │   ├── main.py
-│   │   └── models.py
-│   ├── .env            # Do not upload this to GitHub (use .gitignore)
-│   ├── requirements.txt
-│   └── ...
-├── /frontend           # React UI code
-│   ├── /src
-│   └── package.json
-└── README.md
+
 
 # AI-First CRM HCP Module
 
