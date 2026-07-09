@@ -1,0 +1,154 @@
+import React, { useState } from "react";
+import axios from "axios";
+import { Users, Activity, MessageSquare, ShieldAlert, Send } from "lucide-react";
+
+const API_BASE = "http://localhost:8000/api";
+const SESSION_ID = "hcp_sales_session_2026";
+
+export default function App() {
+  const [messages, setMessages] = useState([
+    { sender: "ai", text: "Hello! I am your AI CRM Assistant. Talk to me to log logs, update HCPs, or fetch insights. (e.g., \"Log meeting with Dr. Amanda Ross\")" }
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const [formState, setFormState] = useState({
+    hcpName: "Dr. Amanda Ross",
+    specialty: "Cardiology",
+    facility: "Johns Hopkins Clinic",
+    topic: "Lipitor",
+    sentiment: "Highly Positive",
+    nextFollowUp: "Next Friday"
+  });
+
+  const [analytics, setAnalytics] = useState({
+    totalInteractions: 42,
+    positiveSentimentRate: "88%",
+    pendingFollowUps: 7
+  });
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    const userMessage = { sender: "user", text: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setLoading(true);
+
+    try {
+      const response = await axios.post(`${API_BASE}/chat`, {
+        message: input,
+        session_id: SESSION_ID
+      });
+
+      if (response.data && response.data.response) {
+        setMessages((prev) => [...prev, { sender: "ai", text: response.data.response }]);
+        if (response.data.form_state) setFormState(response.data.form_state);
+        if (response.data.analytics) setAnalytics(response.data.analytics);
+      }
+    } catch (error) {
+      console.error("API Error:", error);
+      setMessages((prev) => [...prev, { sender: "ai", text: "Sorry, I am having trouble connecting to the backend server. Make sure it is running on port 8000!" }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-slate-900 text-slate-100 font-sans">
+      {/* Header Dashboard Grid */}
+      <header className="grid grid-cols-3 gap-4 p-4 bg-slate-800 border-b border-slate-700">
+        <div className="flex items-center gap-3 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+          <Users className="text-blue-400 w-6 h-6" />
+          <div>
+            <p className="text-xs text-slate-400 font-medium uppercase">Total Interactions</p>
+            <p className="text-xl font-bold">{analytics.totalInteractions}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+          <Activity className="text-emerald-400 w-6 h-6" />
+          <div>
+            <p className="text-xs text-slate-400 font-medium uppercase">Positive Sentiment</p>
+            <p className="text-xl font-bold text-emerald-400">{analytics.positiveSentimentRate}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+          <ShieldAlert className="text-amber-400 w-6 h-6" />
+          <div>
+            <p className="text-xs text-slate-400 font-medium uppercase">Pending Follow-ups</p>
+            <p className="text-xl font-bold text-amber-400">{analytics.pendingFollowUps}</p>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Split-Screen Workspace */}
+      <main className="flex flex-1 overflow-hidden">
+        {/* Left Side: Auto-Filled Form Fields (Locked Condition) */}
+        <section className="w-1/2 p-6 bg-slate-850 border-r border-slate-700 overflow-y-auto">
+          <h2 className="text-lg font-semibold mb-4 text-slate-300 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+            AI-Extracted HCP Insights (Locked Structure)
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">HCP Name</label>
+              <input type="text" value={formState.hcpName} readOnly className="w-full bg-slate-800 border border-slate-700 rounded p-2.5 text-slate-300 cursor-not-allowed font-medium focus:outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Specialty</label>
+              <input type="text" value={formState.specialty} readOnly className="w-full bg-slate-800 border border-slate-700 rounded p-2.5 text-slate-300 cursor-not-allowed font-medium focus:outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Facility / Hospital</label>
+              <input type="text" value={formState.facility} readOnly className="w-full bg-slate-800 border border-slate-700 rounded p-2.5 text-slate-300 cursor-not-allowed font-medium focus:outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Discussion Topic</label>
+              <input type="text" value={formState.topic} readOnly className="w-full bg-slate-800 border border-slate-700 rounded p-2.5 text-slate-300 cursor-not-allowed font-medium focus:outline-none" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Sentiment</label>
+                <input type="text" value={formState.sentiment} readOnly className="w-full bg-slate-800 border border-slate-700 rounded p-2.5 text-emerald-400 bg-emerald-950/20 cursor-not-allowed font-bold focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Next Follow-Up</label>
+                <input type="text" value={formState.nextFollowUp} readOnly className="w-full bg-slate-800 border border-slate-700 rounded p-2.5 text-amber-400 bg-amber-950/20 cursor-not-allowed font-bold focus:outline-none" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Right Side: AI Chat Stream Interface */}
+        <section className="w-1/2 flex flex-col bg-slate-900">
+          <div className="flex-1 p-4 overflow-y-auto space-y-4">
+            {messages.map((m, idx) => (
+              <div key={idx} className={`flex ${m.sender === "user" ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[80%] rounded-lg p-3 text-sm leading-relaxed ${m.sender === "user" ? "bg-blue-600 text-white font-medium" : "bg-slate-800 text-slate-200 border border-slate-700"}`}>
+                  {m.text}
+                </div>
+              </div>
+            ))}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="bg-slate-800 text-slate-400 border border-slate-700 rounded-lg p-3 text-sm flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-slate-400 animate-bounce"></span>
+                  <span className="w-2 h-2 rounded-full bg-slate-400 animate-bounce [animation-delay:0.2s]"></span>
+                  AI Agent is executing workflows...
+                </div>
+              </div>
+            )}
+          </div>
+
+          <form onSubmit={handleSendMessage} className="p-4 bg-slate-850 border-t border-slate-700 flex gap-2">
+            <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message (e.g., Log meeting with Dr. Amanda Ross)..." className="flex-1 bg-slate-800 border border-slate-700 rounded px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+            <button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-2.5 rounded transition flex items-center justify-center">
+              <Send className="w-4 h-4" />
+            </button>
+          </form>
+        </section>
+      </main>
+    </div>
+  );
+}
